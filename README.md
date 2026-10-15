@@ -61,7 +61,7 @@ python3 tests/test_suite.py
 ## Design notes
 
 - All "steps" are just the resulting line of math after each algebraic
-  move (no sentence explaining *why*) — e.g. for a linear ODE:
+  move — e.g. for a linear ODE:
   ```
   1. y' + (2) y = x
   2. μ(x) = exp(∫ 2 dx) = exp(2*x)
