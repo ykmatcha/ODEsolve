@@ -6,6 +6,7 @@ Classification and solving are both done with
 deterministic symbolic-math code (SymPy used purely as a calculator:
 derivatives, integrals, algebraic solving).
 
+This program does NOT solve laplace equations
 ## Files
 
 - `classifier.py` — parses the equation string into a SymPy expression
