@@ -1,6 +1,6 @@
-# ODE Classifier & Step Solver
+# ODE SOLVE README
 
-Classifies a first-order or simple second-order ODE and solves it,
+ODESOLVE a first-order or simple second-order ODE and solves it,
 printing each algebraic step as a plain math line — no AI/LLM call. 
 Classification and solving are both done with
 deterministic symbolic-math code (SymPy used purely as a calculator:
@@ -48,9 +48,10 @@ ODE> y' + y/x = x*y**2
 |--------------|-------------------------|
 | `y'`         | dy/dx                   |
 | `y''`        | d²y/dx²                 |
-| `dy/dx`      | dy/dx                   |
+| `y'''`       | d³y/dx³ (additional primes work for higher orders) |
+| `dy/dx`     | dy/dx                   |
 | `y`          | y(x) (implicit)         |
-| `**`         | exponent                |
+| `^` or `**`  | exponent                |
 | `exp, sin, cos, log, sqrt` | standard functions |
 
 ## Running tests
@@ -76,4 +77,6 @@ python3 tests/test_suite.py
   homogeneous → linear.
 - The general `dsolve` fallback runs under a hard wall-clock timeout
   (`signal.alarm`) so an unsupported/hard equation reports "no closed
-  form found quickly" instead of freezing the program.
+  form found quickly" instead of freezing the program. It can also solve
+  higher-order equations that do not match the specialized methods when
+  SymPy has a supported solution method.

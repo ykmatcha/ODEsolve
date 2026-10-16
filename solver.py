@@ -2,11 +2,11 @@
 solver.py
 ---------
 Given a classification + equation, produces:
-    - a list of solution steps (each step is just the resulting math line,
-      no explanatory sentences)
+    - a list of solution steps
     - the final general solution
 
-Uses SymPy purely as a symbolic calculator. No external AI/LLM calls.
+Uses SymPy purely as a symbolic calculator.
+
 """
 
 import sympy as sp

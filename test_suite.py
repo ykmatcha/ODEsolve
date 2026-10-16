@@ -1,8 +1,8 @@
 """
 tests/test_suite.py
 --------------------
-Regression tests for classifier + solver. No AI involved — just asserts
-that classification labels are sensible and solving completes without
+Regression tests for classifier + solver. 
+Classification labels are sensible and solving completes without
 hanging or crashing, comparing against known textbook structure.
 
 Run with:  python3 tests/test_suite.py
@@ -37,11 +37,14 @@ def check(name, equation_str, expected_type):
 
 
 def main():
+    global PASS, FAIL
+
     # Separable takes priority when an equation is separable, even if it
     # could also be solved as linear/Bernoulli -- it's the simpler method.
     check("separable-also-linear", "dy/dx = x*y", "separable")
     check("separable-also-bernoulli", "y' + y = y**2", "separable")
     check("separable-transcendental", "dy/dx = x*sin(y)", "separable")
+    check("caret-power-notation", "y' + y/x = x*y ^ 2", "bernoulli")
 
     # Genuinely linear (not separable): P(x), Q(x) don't factor into a
     # single g(x)*h(y) product.
@@ -59,6 +62,20 @@ def main():
     check("2nd-order-forced", "y'' - y = x", "linear_const_coeff_2nd_order")
     check("2nd-order-complex-roots", "y'' + y = 0", "linear_const_coeff_2nd_order")
     check("2nd-order-repeated-root", "y'' + 2*y' + y = 0", "linear_const_coeff_2nd_order")
+
+    third_order_equation = "y''' + 3*y'' + 3*y' + y = 0"
+    third_order_result = check("3rd-order-general-solver", third_order_equation, "unknown")
+    x = sp.symbols("x")
+    y = sp.Function("y")
+    ode = sp.Eq(sp.diff(y(x), x, 3) + 3*sp.diff(y(x), x, 2) +
+                 3*sp.diff(y(x), x) + y(x), 0)
+    solved, _ = sp.checkodesol(ode, third_order_result.general_solution)
+    if solved:
+        PASS += 1
+        print("[PASS] 3rd-order solution satisfies the ODE")
+    else:
+        FAIL += 1
+        print("[FAIL] 3rd-order solution satisfies the ODE")
 
     print(f"\n{PASS} passed, {FAIL} failed")
     sys.exit(0 if FAIL == 0 else 1)

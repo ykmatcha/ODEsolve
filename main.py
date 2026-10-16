@@ -8,11 +8,10 @@ Usage:
     python3 main.py            (interactive mode)
 
 Accepted syntax:
-    y'        -> dy/dx
-    y''       -> d2y/dx2
+    y followed by n primes -> nth derivative of y
     dy/dx     -> dy/dx
     y         -> y(x)   (implicit)
-    Standard python/sympy operators: + - * / ** , functions: exp, sin, cos, log, sqrt
+    Operators: + - * / ** or ^; functions: exp, sin, cos, log, sqrt
 """
 
 import sys

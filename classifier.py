@@ -3,8 +3,9 @@ classifier.py
 -------------
 Detects what type of first-order or simple higher-order ODE an equation is.
 
-No AI / LLM calls anywhere. Classification is done purely through symbolic
-pattern matching with SymPy (treated here as a calculator/CAS, not an AI).
+Classification is done purely through symbolic pattern matching with SymPy (treated here as a calculator/CAS).
+
+USE WITH CAUTION: This is a prototype and not guaranteed to be correct for all inputs. It is intended for educational purposes and may not handle all edge cases or complex ODE forms.
 
 Supported classes (checked in priority order):
     1. separable
@@ -13,7 +14,7 @@ Supported classes (checked in priority order):
     4. homogeneous
     5. exact
     6. linear_const_coeff_2nd_order   (a y'' + b y' + c y = 0 or = f(x))
-    7. unknown (fallback)
+    7. unknown (solved through SymPy's general dsolve fallback)
 """
 
 import sympy as sp
@@ -36,6 +37,8 @@ def _get_first_order_form(expr, y, x):
     """
     yp = sp.Derivative(y(x), x)
     if not expr.has(yp):
+        return None
+    if any(derivative != yp for derivative in expr.atoms(sp.Derivative)):
         return None
     sols = sp.solve(expr, yp)
     return sols if sols else None
@@ -81,22 +84,24 @@ def _parse_equation(equation_str, x, y):
     """
     Converts a human-friendly string into a SymPy Eq object with
     y(x) and its derivatives. Supports:
-        y'   -> Derivative(y(x), x)
-        y''  -> Derivative(y(x), x, 2)
+        y followed by n primes -> nth derivative of y(x)
         dy/dx -> Derivative(y(x), x)
     """
-    s = equation_str.replace(" ", "")
+    import re
 
+    s = equation_str.replace(" ", "").replace("^", "**")
     # Replace dy/dx style first
     s = s.replace("dy/dx", "Derivative(y(x),x)")
 
-    # Replace y'' before y' (longest match first)
-    s = s.replace("y''", "Derivative(y(x),x,2)")
-    s = s.replace("y'", "Derivative(y(x),x)")
+    # Replace prime notation, supporting derivatives of any order.
+    s = re.sub(
+        r"(?<![\w])y('+)",
+        lambda match: f"Derivative(y(x),(x,{len(match.group(1))}))",
+        s,
+    )
 
     # Replace bare 'y' (not already inside y(x) or Derivative) with y(x)
     # Do this carefully: tokenize-replace using regex word boundary on 'y'
-    import re
     s = re.sub(r'(?<![\w])y(?![\w(])', 'y(x)', s)
 
     if "=" in s:
@@ -118,7 +123,13 @@ def _check_linear_2nd_order(expr, x, y):
     y1 = sp.Derivative(y(x), x)
     y0 = y(x)
 
+    if any(derivative not in (y1, y2) for derivative in expr.atoms(sp.Derivative)):
+        return None
+
     poly = sp.Poly(expr, y2, y1, y0) if expr.is_polynomial(y2, y1, y0) else None
+    if poly is None or poly.total_degree() > 1:
+        return None
+
     a = expr.coeff(y2)
     remainder = sp.expand(expr - a * y2)
     b = remainder.coeff(y1)
@@ -336,7 +347,7 @@ def _check_exact(expr, x, y):
     yx = y(x)
     yp = sp.Derivative(yx, x)
 
-    if not expr.has(yp):
+    if not sols:
         return None
 
     N = expr.coeff(yp)
