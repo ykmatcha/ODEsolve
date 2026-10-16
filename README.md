@@ -1,7 +1,7 @@
 # ODE SOLVE README
 
 ODESOLVE a first-order or simple second-order ODE and solves it,
-printing each algebraic step as a plain math line — no AI/LLM call. 
+printing each algebraic step as a plain math line
 Classification and solving are both done with
 deterministic symbolic-math code (SymPy used purely as a calculator:
 derivatives, integrals, algebraic solving).
