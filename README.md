@@ -22,7 +22,9 @@ This program does NOT solve laplace equations
   method for that type and records each algebraic step (`Step` objects),
   with no explanatory prose attached.
 - `main.py` — CLI / interactive entry point.
-- `tests/test_suite.py` — regression tests covering each type.
+- `web_app.py` — local browser interface, served on port 3000 by default.
+- `test_suite.py` — regression tests covering each type.
+- `test_web_app.py` — tests for the web interface and input validation.
 
 ## Usage
 
@@ -42,6 +44,26 @@ python3 main.py
 ODE> y' + y/x = x*y**2
 ```
 
+## Run the web app
+
+Start the local web server from the project directory:
+
+```bash
+python3 web_app.py
+```
+
+Open <http://127.0.0.1:3000> in your browser. To choose another port, use
+`python3 web_app.py --port 3001`.
+
+In VS Code when the project is running in a remote environment:
+
+1. Start `python3 web_app.py` in the integrated terminal.
+2. Open the **Ports** view (View → Open View → Ports).
+3. Choose **Forward a Port**, enter `3000`, and open the forwarded address.
+
+The server listens on `127.0.0.1` and is intended for local/forwarded use,
+not direct public exposure.
+
 ## Input syntax
 
 | You type     | Means                  |
@@ -57,7 +79,8 @@ ODE> y' + y/x = x*y**2
 ## Running tests
 
 ```bash
-python3 tests/test_suite.py
+python3 test_suite.py
+python3 -m unittest test_web_app
 ```
 
 ## Design notes
