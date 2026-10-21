@@ -60,42 +60,69 @@ def solve_equation(equation):
     }
 
 
-HTML_PAGE = """<!doctype html>
+HTML_PAGE = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ODEsolve</title>
   <style>
-    :root { color-scheme: light; font: 16px/1.5 system-ui, sans-serif; }
-    body { background: #f3f5f8; color: #182230; margin: 0; }
-    main { box-sizing: border-box; margin: 8vh auto; max-width: 760px; padding: 0 24px; }
-    h1 { font-size: 2rem; margin-bottom: 4px; }
-    .muted { color: #536273; }
-    form, .result { background: white; border: 1px solid #dce2e9; border-radius: 12px; padding: 22px; }
-    label { display: block; font-weight: 650; margin-bottom: 8px; }
-    textarea { box-sizing: border-box; font: 1rem/1.5 ui-monospace, monospace; min-height: 100px; padding: 12px; resize: vertical; width: 100%; }
-    button { background: #155eef; border: 0; border-radius: 7px; color: white; cursor: pointer; font: inherit; font-weight: 650; margin-top: 12px; padding: 10px 16px; }
-    button:disabled { cursor: wait; opacity: .65; }
-    .result { margin-top: 18px; }
-    .result h2 { font-size: 1.1rem; margin: 14px 0 5px; }
-    pre { background: #f6f8fa; border-radius: 6px; overflow-wrap: anywhere; padding: 12px; white-space: pre-wrap; }
-    [hidden] { display: none; }
+    html, body {
+      margin: 0;
+      min-height: 100vh;
+      background: #ffffff;
+      color: #1a1a1a;
+      font-family: 'Georgia', Serif;
+    }
+    main {
+      box-sizing: border-box;
+      max-width: 820px;
+      padding: 12vh 32px 32px;
+      margin: 0 auto;
+    }
+    h1 { font-size: 3rem; margin: 0 0 6px; }
+    .muted { color: #4a4a4a; margin-bottom: 20px; }
+    form { display: flex; }
+    input {
+      flex: 1;
+      box-sizing: border-box;
+      font: 1rem 'Georgia', Serif;
+      padding: 12px;
+      border: 2px solid #1a1a1a;
+      border-right: 0;
+      border-radius: 0;
+      background: #f0f0f0;
+      outline: none;
+    }
+    button {
+      font: 1rem 'Georgia', Serif;
+      font-weight: bold;
+      padding: 12px 20px;
+      border: 2px solid #1a1a1a;
+      border-radius: 0;
+      background: #405DE6;
+      color: #f0f0f0;
+      cursor: pointer;
+    }
+    button:disabled { cursor: wait; opacity: .6; }
     #error { color: #b42318; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+    [hidden] { display: none; }
   </style>
 </head>
 <body>
   <main>
     <h1>ODEsolve</h1>
-    <p class="muted">Enter an ordinary differential equation. Use y', y'', y''' for derivatives and ^ or ** for powers.</p>
+    <div class="muted">Example: <code>y' + y/x = x*y**2</code></div>
+
     <form id="solver-form">
-      <label for="equation">Equation</label>
-      <textarea id="equation" name="equation" required spellcheck="false">y' + y = x</textarea>
-      <div class="muted">Example: <code>y' + y/x = x*y ^ 2</code></div>
+      <input id="equation" name="equation" type="text" required
+             spellcheck="false" autocomplete="off" value="y' + y = x">
       <button id="solve-button" type="submit">Solve</button>
     </form>
+
     <p id="error" role="alert" hidden></p>
-    <section id="result" class="result" aria-live="polite" hidden>
+    <section id="result" aria-live="polite" hidden>
       <div id="type" class="muted"></div>
       <h2>General solution</h2>
       <pre id="solution"></pre>
@@ -103,36 +130,35 @@ HTML_PAGE = """<!doctype html>
       <pre id="steps"></pre>
     </section>
   </main>
+
   <script>
     const form = document.querySelector("#solver-form");
     const button = document.querySelector("#solve-button");
     const error = document.querySelector("#error");
     const result = document.querySelector("#result");
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
       button.disabled = true;
-      button.textContent = "Solving...";
       error.hidden = true;
       result.hidden = true;
       try {
-        const response = await fetch("/solve", {
+        const res = await fetch("/solve", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ equation: document.querySelector("#equation").value })
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Could not solve this equation.");
-        document.querySelector("#type").textContent = `Detected type: ${data.ode_type}`;
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Server error " + res.status);
+        document.querySelector("#type").textContent = "Type: " + data.ode_type;
         document.querySelector("#solution").textContent = data.solution || "No closed-form solution found.";
-        document.querySelector("#steps").textContent = data.steps.join("\\n") || "No solution steps available.";
+        document.querySelector("#steps").textContent = data.steps.join("\\n");
         result.hidden = false;
-      } catch (exception) {
-        error.textContent = exception.message;
+      } catch (err) {
+        error.textContent = err.message;
         error.hidden = false;
       } finally {
         button.disabled = false;
-        button.textContent = "Solve";
       }
     });
   </script>
